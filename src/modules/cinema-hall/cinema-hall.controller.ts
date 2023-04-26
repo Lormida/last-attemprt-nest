@@ -1,4 +1,3 @@
-import { Public } from './../auth-jwt/decorators/public.decorator'
 import {
   Controller,
   UseFilters,
@@ -37,7 +36,6 @@ export class CinemaHallController {
     private readonly cinemaHallService: CinemaHallService,
   ) {}
 
-  @Public()
   @Post(':cinemaId')
   @ApiOperation({
     description: 'Create cinema hall with seating schema',
@@ -96,7 +94,7 @@ export class CinemaHallController {
       cinemaHallId,
     )
 
-    const cinemaHall = await this.cinemaHallService.findOneCinemaHall(cinemaHallId)
+    const cinemaHall = await this.cinemaHallService.findOneCinemaHall({ id: cinemaHallId })
 
     if (!cinemaHall) {
       throw new NotFoundException(`Could not find cinema hall with ${cinemaHallId}.`)

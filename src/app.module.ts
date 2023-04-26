@@ -1,12 +1,9 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { APP_GUARD } from '@nestjs/core'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { AuthGoogleModule } from './modules/auth-google/auth-google.module'
 import { AuthJwtModule } from './modules/auth-jwt/auth-jwt.module'
-import { AtGuard } from './modules/auth-jwt/guards'
-import { BookingsModule } from './modules/bookings/bookings.module'
 import { CinemaModule } from './modules/cinema/cinema.module'
 import { MovieReviewsModule } from './modules/movie-reviews/movie-reviews.module'
 import { MovieSessionModule } from './modules/movie-session/movie-session.module'
@@ -18,6 +15,8 @@ import { UsersModule } from './modules/users/users.module'
 import { AuthGithubModule } from './modules/auth-github/auth-github.module'
 import { SeatsInCinemaHallModule } from './modules/seats-in-cinema-hall/seats-in-cinema-hall.module'
 import { CinemaHallModule } from './modules/cinema-hall/cinema-hall.module'
+import { BookingModule } from './modules/bookings/bookings.module'
+import { S3Module } from './modules/s3/s3.module'
 
 @Module({
   imports: [
@@ -32,20 +31,15 @@ import { CinemaHallModule } from './modules/cinema-hall/cinema-hall.module'
     MovieSessionModule,
     MoviesInCinemaModule,
     MovieReviewsModule,
-    BookingsModule,
+    BookingModule,
     AuthJwtModule,
     AuthGoogleModule,
     UsersModule,
     AuthGithubModule,
     CinemaHallModule,
+    S3Module,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: AtGuard,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

@@ -2,10 +2,10 @@ import { Controller, UseFilters, Get, Param, ParseIntPipe, NotFoundException } f
 import { ApiTags, ApiOperation, ApiOkResponse, ApiNotFoundResponse } from '@nestjs/swagger'
 import { NotFoundResponseDto } from '../../common/dtos/errors'
 import { Serialize } from '../../common/interceptors'
-import { Public } from '../auth-jwt/decorators'
 import { PrismaClientExceptionFilter } from '../prisma/prisma-client-exception'
 import { MovieEntity } from './entity'
 import { MovieService } from './movie.service'
+import { GetMovieQuery } from './decorators'
 
 @Controller('movies')
 @ApiTags('Movie')
@@ -17,13 +17,28 @@ export class MovieController {
   @Get()
   @ApiOperation({ description: 'Get all movies' })
   @ApiOkResponse({ type: MovieEntity, isArray: true })
-  findAllMovies(): MovieEntity[] {
-    const movies = this.movieService.findAllMovies()
+  async findAllMovies(): Promise<MovieEntity[]> {
+    const movies = await this.movieService.findAllMovies()
 
     return movies
   }
 
-  @Public()
+  @Get('cinema/:cinemaId')
+  @ApiOperation({ description: 'Get all available movies for cinema (by cinema id)' })
+  @ApiNotFoundResponse({ type: NotFoundResponseDto })
+  @ApiOkResponse({ type: MovieEntity })
+  async findMoviesForCinema(
+    @Param('cinemaId', ParseIntPipe) cinemaId: number,
+    @GetMovieQuery('fields') queryFields?: Record<string, boolean>,
+  ) {
+    const moviesForCinemaHall = await this.movieService.findMoviesForCinema({
+      cinemaId,
+      fields: queryFields,
+    })
+
+    return moviesForCinemaHall
+  }
+
   @Get(':movieId')
   @ApiOperation({ description: 'Get one movie by movieId (from MovieRecord)' })
   @ApiNotFoundResponse({ type: NotFoundResponseDto })
