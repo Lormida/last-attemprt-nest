@@ -28,6 +28,10 @@ export class MovieQueryDto implements Partial<Record<MovieField, boolean>> {
 
   @IsOptional()
   @IsBoolean()
+  thumbnailPreviewImageFromTrailer?: boolean
+
+  @IsOptional()
+  @IsBoolean()
   description?: boolean
 
   @IsOptional()
@@ -49,6 +53,10 @@ export class MovieQueryDto implements Partial<Record<MovieField, boolean>> {
   @IsOptional()
   @IsBoolean()
   id?: boolean
+
+  @IsOptional()
+  @IsBoolean()
+  imdbId?: boolean
 
   @IsOptional()
   @IsBoolean()

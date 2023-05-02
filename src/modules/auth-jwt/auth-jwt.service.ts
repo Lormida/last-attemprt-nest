@@ -33,7 +33,7 @@ export class AuthJwtService {
         userId: newUser.id,
         email: newUser.email as string,
         username: newUser.username ?? undefined,
-        role: newUser.role,
+        roles: [newUser.role],
       })
 
       const newRtSession = await this.createRtSession(newUser.id, tokens.refresh_token)
@@ -66,7 +66,7 @@ export class AuthJwtService {
     const tokens = await this.generateTokens({
       userId: user.id,
       email: user.email as string,
-      role: user.role,
+      roles: [user.role],
     })
 
     const newRtSession = await this.createRtSession(user.id, tokens.refresh_token)
@@ -77,7 +77,7 @@ export class AuthJwtService {
   async logout(userId: number): Promise<boolean> {
     await this.prisma.rTSession.deleteMany({
       where: {
-        userId: userId,
+        userId,
       },
     })
 
@@ -91,13 +91,13 @@ export class AuthJwtService {
     rtSessionId: number
     refreshToken: string
   }): Promise<TokensWithClientData> {
-    const { sub: userId, email, role } = this.jwtService.decode(refreshToken) as JwtPayload
+    const { sub: userId, email, roles } = this.jwtService.decode(refreshToken) as JwtPayload
 
     // Generate new pair of tokens and new session
     const tokens = await this.generateTokens({
       userId,
       email,
-      role,
+      roles,
     })
 
     await this.updateRtSession({
@@ -153,18 +153,18 @@ export class AuthJwtService {
     userId,
     email,
     username,
-    role,
+    roles,
   }: {
     userId: number
     email?: string
     username?: string
-    role: RoleEnum
+    roles: RoleEnum[]
   }): Promise<Tokens> {
     const jwtPayload = {
       sub: userId,
       email,
       username,
-      role,
+      roles,
     } as JwtPayload
 
     const [at, rt] = await Promise.all([
@@ -202,7 +202,7 @@ export class AuthJwtService {
     userId: number
     rtSessionId: number
     refreshToken: string
-  }) {
+  }): Promise<void> {
     const user = await this.usersService.findOneUser({ id: userId })
 
     // 1. Check if user with such RT exists
@@ -215,10 +215,7 @@ export class AuthJwtService {
 
     const isEqual = bcrypt.compareSync(refreshToken, rtSession.hashedRt)
 
-    // 3. Check if getted from client RT has the same hash as "hashed version" of this RT in DB
     if (!isEqual) throw new ForbiddenException('Your RT is malformed')
-
-    return isEqual
   }
 
   addTokensToCookies(
@@ -262,5 +259,17 @@ export class AuthJwtService {
       sameSite: 'none',
       expires: new Date(Date.now() + 1000 * 60 * EXPIRES_IN_RT_MIN),
     })
+  }
+
+  async removeExpiredRtSessions(): Promise<Prisma.BatchPayload> {
+    const deletedExpiredRtSessionsAmount = await this.prisma.rTSession.deleteMany({
+      where: {
+        rtExpDate: {
+          lte: new Date(),
+        },
+      },
+    })
+
+    return deletedExpiredRtSessionsAmount
   }
 }

@@ -1,29 +1,35 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator'
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
 import { Movie } from '../types/movie.type'
 
 export class MovieEntity {
   constructor(movie: Movie) {
+    this.id = movie.id
+    this.imdbId = movie.imdbId
     this.title = movie.title
     this.rating = movie.rating
     this.releaseYear = movie.releaseYear
     this.image = movie.image
     this.description = movie.description
+    this.thumbnailPreviewImageFromTrailer = movie.thumbnailPreviewImageFromTrailer
     this.trailer = movie.trailer
     this.genres = movie.genres
     this.authors = movie.authors
     this.writers = movie.writers
-    this.id = movie.id
     this.actors = movie.actors
     this.duration = movie.duration
     this.countries = movie.countries
   }
 
   @IsInt()
+  @ApiProperty({ example: 1 })
+  id: number
+
+  @IsString()
   @IsNotEmpty()
   @ApiProperty({ example: 'tt0111161' })
-  id: string
+  imdbId: string
 
   @IsString()
   @IsNotEmpty()
@@ -58,6 +64,15 @@ export class MovieEntity {
       'https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_QL75_UX380_CR0,1,380,562_.jpg',
   })
   image: string
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @ApiPropertyOptional({
+    example:
+      'https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_QL75_UX380_CR0,1,380,562_.jpg',
+  })
+  thumbnailPreviewImageFromTrailer?: string
 
   @IsString()
   @IsNotEmpty()
